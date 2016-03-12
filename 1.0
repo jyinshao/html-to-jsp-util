@@ -1,0 +1,327 @@
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+
+public class HtmlToJsp {
+
+
+
+
+//that is an example how to use it
+public static void main(String[] args) {
+		try {
+			HtmlToJsp.dochange("E:/temps", HtmlToJsp.addingWords, "UTF-8", "UTF-8", true);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+
+
+
+
+
+
+	static String addingWords = "<%@ page language=\"java\" import=\"java.util.*\" pageEncoding=\"UTF-8\"%>\n"
+			+ "<%\nString path = request.getContextPath();\nString basePath = request.getScheme()+\"://\"+"
+			+ "request.getServerName()+\":\"+request.getServerPort()+path+\"/\";\n%>";
+
+	/**
+	 * 删除此目录下的所有以.html结尾的文件
+	 * 
+	 * @param path
+	 *            目录或者文件的路径
+	 */
+	public static void deleteHtml(String path) {
+		File file = new File(path);
+		deleteHtml(file);
+		System.out.println("删除操作完成");
+	}
+
+	public static void deleteHtml(File file) {
+		if (file != null) {
+			if (file.isDirectory()) {
+				// 若文件是文件夹
+				File[] files = file.listFiles();
+				for (int i = 0; i < files.length; i++) {
+					// 若文件为文件类型
+					if (files[i].isFile()) {
+						// 若文件为html文件
+						if (files[i].getName().endsWith(".html")) {
+							System.out.println(files[i].getName() + "文件的删除结果为："
+									+ files[i].delete());
+						}
+
+					} else {
+						// 若文件是文件夹继续递归
+						deleteHtml(files[i]);
+					}
+				}
+			} else {
+				// 文件不是文件夹
+				if (file.getName().endsWith(".html")) {
+
+					System.out.println(file.getName() + "文件的删除结果为："
+							+ file.delete());
+				}
+			}
+		}
+	}
+	
+	/**
+	 * 删除目录文件内指定文件类型的文件
+	 * @param path
+	 * @param pattern  以pattern字符串结尾的文件
+	 */
+	public static void deleteFile(String path,String pattern) {
+		File file = new File(path);
+		deleteFile(file,pattern);
+		System.out.println("删除操作完成");
+	}
+
+	public static void deleteFile(File file,String pattern) {
+		if (file != null) {
+			if (file.isDirectory()) {
+				// 若文件是文件夹
+				File[] files = file.listFiles();
+				for (int i = 0; i < files.length; i++) {
+					// 若文件为文件类型
+					if (files[i].isFile()) {
+						// 若文件为html文件
+						if (files[i].getName().endsWith(pattern)) {
+							System.out.println(files[i].getName() + "文件的删除结果为："
+									+ files[i].delete());
+						}
+
+					} else {
+						// 若文件是文件夹继续递归
+						deleteFile(files[i],pattern);
+					}
+				}
+			} else {
+				// 文件不是文件夹
+				if (file.getName().endsWith(pattern)) {
+
+					System.out.println(file.getName() + "文件的删除结果为："
+							+ file.delete());
+				}
+			}
+		}
+	}
+
+	/**
+	 * 批量以fromcharsetname编码读取html文件并转换为以当前编辑编码形式的jsp文件（不删除原html文件）
+	 * 
+	 * @param path
+	 *            文件目录或者文件的路径
+	 * @param addingWords
+	 *            需要往jsp文件头部预先写入的文字
+	 * @param fromCharsetName
+	 *            读取html文件的编码格式名称
+	 * @throws IOException
+	 */
+	public static void dochange(String path, String addingWords,
+			String fromCharsetName) throws IOException {
+		File file = new File(path);
+		readAllFile(file, addingWords, fromCharsetName, null, false);
+		System.out.println("转换完成");
+	}
+
+	/**
+	 * 批量html文件并转换为jsp文件(不删除原html文件)
+	 * 
+	 * @param path
+	 *            文件目录或者文件的路径
+	 * @param addingWords
+	 *            需要往jsp文件头部预先写入的文字
+	 * @throws IOException
+	 */
+	public static void dochange(String path, String addingWords)
+			throws IOException {
+		File file = new File(path);
+		readAllFile(file, addingWords, null, null, false);
+		System.out.println("转换完成");
+	}
+
+	/**
+	 * 批量html文件并转换为jsp文件(不删除原html文件)
+	 * 
+	 * @param path
+	 *            文件目录或者文件的路径
+	 * @param addingWords
+	 *            需要往jsp文件头部预先写入的文字
+	 * @param deleteHtml
+	 *            是否删除原html文件
+	 * @throws IOException
+	 */
+	public static void dochange(String path, String addingWords,
+			boolean deleteHtml) throws IOException {
+		File file = new File(path);
+		readAllFile(file, addingWords, null, null, deleteHtml);
+		System.out.println("转换完成");
+	}
+
+	/**
+	 * 批量以fromcharsetname编码读取html文件并转换为以tocharsetname编码的jsp文件，
+	 * 
+	 * @param path
+	 *            文件目录或者文件的路径
+	 * @param addingWords
+	 *            需要往jsp文件头部预先写入的文字
+	 * @param fromCharsetName
+	 *            读取html文件的编码格式名称
+	 * @param toCharsetName
+	 *            以什么编码方式转换为Jsp文件
+	 * @param deleteHtml
+	 *            是否删除html文件
+	 * @throws IOException
+	 */
+	public static void dochange(String path, String addingWords,
+			String fromCharsetName, String toCharsetName, boolean deleteHtml)
+			throws IOException {
+		File file = new File(path);
+		readAllFile(file, addingWords, fromCharsetName, toCharsetName,
+				deleteHtml);
+		System.out.println("转换完成");
+	}
+
+	/**
+	 * 
+	 * 批量以fromcharsetname编码读取html文件并转换为以tocharsetname编码的jsp文件(不删除原html文件)
+	 * 
+	 * @param path
+	 *            文件目录或者文件的路径
+	 * @param addingWords
+	 *            需要往jsp文件头部预先写入的文字
+	 * @param fromCharsetName
+	 *            读取html文件的编码格式名称
+	 * @param toCharsetName
+	 *            以什么编码方式转换为Jsp文件
+	 * @throws IOException
+	 */
+	public static void dochange(String path, String addingWords,
+			String fromCharsetName, String toCharsetName) throws IOException {
+		File file = new File(path);
+		readAllFile(file, addingWords, fromCharsetName, toCharsetName, false);
+		System.out.println("转换完成");
+	}
+
+	public static void readAllFile(File file, String addingWords,
+			String fromCharsetName, String toCharsetName, boolean deleteHtml)
+			throws IOException {
+
+		if (file != null) {
+
+			if (file.isDirectory()) {
+				File[] files = file.listFiles();
+				for (int i = 0; i < files.length; i++) {
+					if (files[i].isFile()) {
+
+						String filename = files[i].getName();
+
+						if (filename.endsWith(".html")) {
+
+							String newname = filename.replace(".html", ".jsp");
+							FileInputStream fis = new FileInputStream(files[i]);
+							InputStreamReader in = null;
+							if (fromCharsetName != null) {
+
+								in = new InputStreamReader(fis, fromCharsetName);
+							} else {
+								in = new InputStreamReader(fis);
+							}
+							FileOutputStream fosfirst = new FileOutputStream(
+									files[i].getParentFile().getAbsolutePath()
+											+ "/" + newname);
+							byte[] b = addingWords.getBytes();
+							fosfirst.write(b);
+
+							fosfirst.flush();
+							fosfirst.close();
+
+							FileOutputStream fos = new FileOutputStream(
+									files[i].getParentFile().getAbsolutePath()
+											+ "/" + newname, true);
+							OutputStreamWriter out = null;
+							if (toCharsetName != null) {
+
+								out = new OutputStreamWriter(fos, toCharsetName);
+							} else {
+								out = new OutputStreamWriter(fos);
+							}
+							char[] ch = new char[1024 * 64];
+							for (int len; (len = in.read(ch)) != -1;) {
+								out.write(ch, 0, len);
+
+							}
+							in.close();
+							out.flush();
+							out.close();
+
+							if (deleteHtml) {
+
+								System.out.println(files[i].getName()
+										+ "文件删结果：" + files[i].delete());
+							}
+						}
+					} else {
+						readAllFile(files[i], addingWords, fromCharsetName,
+								toCharsetName, deleteHtml);
+					}
+
+				}
+
+			} else {
+				String filename = file.getName();
+				if (file.getName().endsWith(".html")) {
+
+					String newname = filename.replace(".html", ".jsp");
+					FileInputStream fis = new FileInputStream(file);
+					InputStreamReader in = null;
+					if (fromCharsetName != null) {
+
+						in = new InputStreamReader(fis, fromCharsetName);
+					} else {
+						in = new InputStreamReader(fis);
+					}
+					FileOutputStream fosfirst = new FileOutputStream(file
+							.getParentFile().getAbsolutePath() + "/" + newname);
+					byte[] b = addingWords.getBytes();
+					fosfirst.write(b);
+
+					fosfirst.flush();
+					fosfirst.close();
+
+					FileOutputStream fos = new FileOutputStream(file
+							.getParentFile().getAbsolutePath() + "/" + newname,
+							true);
+					OutputStreamWriter out = null;
+					if (toCharsetName != null) {
+
+						out = new OutputStreamWriter(fos, toCharsetName);
+					} else {
+						out = new OutputStreamWriter(fos);
+					}
+					char[] ch = new char[1024 * 64];
+					for (int len; (len = in.read(ch)) != -1;) {
+						out.write(ch, 0, len);
+
+					}
+					in.close();
+					out.flush();
+					out.close();
+					if (deleteHtml) {
+
+						System.out.println(file.getName() + "文件删结果："
+								+ file.delete());
+					}
+
+				}
+			}
+		}
+	}
+
+}
